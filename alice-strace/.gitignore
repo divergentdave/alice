@@ -1,0 +1,10 @@
+*.o
+*.pyc
+.deps
+Makefile
+/alice-strace
+config.h
+config.log
+config.status
+/linux/ioctlent.h
+stamp-h1

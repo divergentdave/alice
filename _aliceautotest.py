@@ -179,7 +179,7 @@ class Operation:
             dirty_write_ops_inode[self.parent].add(self)
         
     # Clears dirty write collection on fsync.
-    # TODO: handle file_sync_range correctly. Currently treating as 
+    # TODO: handle sync_file_range correctly. Currently treating as
     # the same as fdatasync. 
     def clear_dirty_write_collection(self):
         global dirty_write_ops

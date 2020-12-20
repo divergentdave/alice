@@ -87,7 +87,7 @@ equivalent_syscall['pwrite64'] = 'pwrite'
 equivalent_syscall['_llseek'] = 'lseek'
 equivalent_syscall['ftruncate64'] = 'ftruncate'
 
-sync_ops = set(['fsync', 'fdatasync', 'file_sync_range', 'sync'])
+sync_ops = set(['fsync', 'fdatasync', 'sync_file_range', 'sync'])
 expansive_ops = set(['append', 'trunc', 'write', 'unlink', 'rename'])
 pseudo_ops = sync_ops | set(['stdout'])
 real_ops = expansive_ops | set(['creat', 'link', 'mkdir', 'rmdir'])
@@ -511,7 +511,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 					assert new_op.count > 0
 					micro_operations.append(new_op)
 					if 'O_SYNC' in fdtracker.get_attribs(fd):
-						new_op = Struct(op = 'file_sync_range', name = name, offset = pos, count = overwrite_size, inode = inode)
+						new_op = Struct(op = 'sync_file_range', name = name, offset = pos, count = overwrite_size, inode = inode)
 						micro_operations.append(new_op)
 				pos += overwrite_size
 				count -= overwrite_size
@@ -529,7 +529,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 					__replayed_truncate(name, pos + count)
 
 					if 'O_SYNC' in fdtracker.get_attribs(fd):
-						new_op = Struct(op = 'file_sync_range', name = name, offset = pos, count = count, inode = inode)
+						new_op = Struct(op = 'sync_file_range', name = name, offset = pos, count = count, inode = inode)
 						micro_operations.append(new_op)
 				if parsed_line.syscall not in ['pwrite', 'pwritev']:
 					fdtracker.set_pos(fd, pos + count)
@@ -783,7 +783,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 			regions = memtracker.resolve_range(addr_start, addr_end)
 			for region in regions:
 				count = region.addr_end - region.addr_start + 1
-				new_op = Struct(op = 'file_sync_range', name = region.name, inode = region.inode, offset = region.offset, count = count)
+				new_op = Struct(op = 'sync_file_range', name = region.name, inode = region.inode, offset = region.offset, count = count)
 				micro_operations.append(new_op)
 	elif parsed_line.syscall == 'mwrite':
 		addr_start = safe_string_to_int(parsed_line.args[0])

@@ -195,7 +195,7 @@ class defaultfs:
 			line.hidden_disk_ops = link_disk_ops(line.parent, line.inode, line.name, eval(line.mode), Struct.TYPE_DIR)
 		elif line.op == 'rmdir':
 			line.hidden_disk_ops = unlink_disk_ops(line.parent, line.inode, line.name, 0, 0, Struct.TYPE_DIR)
-		elif line.op in ['fsync', 'fdatasync', 'file_sync_range']:
+		elif line.op in ['fsync', 'fdatasync', 'sync_file_range']:
 			line.hidden_disk_ops = []
 			if line.op in ['fsync', 'fdatasync']:
 				offset = 0

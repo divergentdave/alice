@@ -667,6 +667,18 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 			size = __replayed_stat(name).st_size
 			synced_files.append(Struct(name = name, inode = inode, size = size))
 		micro_operations.append(Struct(op = parsed_line.syscall, hidden_files = synced_files))
+	elif parsed_line.syscall == 'sync_file_range':
+		# N.B. this ignores the flags
+		assert int(parsed_line.ret) == 0
+		fd = safe_string_to_int(parsed_line.args[0])
+		if fdtracker.is_watched(fd):
+			name = fdtracker.get_name(fd)
+			inode = fdtracker.get_inode(fd)
+			files = __get_files_from_inode(inode)
+			assert len(files) > 0
+			offset = safe_string_to_int(parsed_line.args[1])
+			count = safe_string_to_int(parsed_line.args[2])
+			micro_operations.append(Struct(op = parsed_line.syscall, name = name, offset = offset, count = count, inode = inode))
 	elif parsed_line.syscall == 'mkdir':
 		if int(parsed_line.ret) != -1:
 			name = proctracker.original_path(eval(parsed_line.args[0]))

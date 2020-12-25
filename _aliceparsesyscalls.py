@@ -727,7 +727,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 	elif parsed_line.syscall in ['fcntl', 'fcntl64']:
 		fd = safe_string_to_int(parsed_line.args[0])
 		cmd = parsed_line.args[1]
-		assert cmd in ['F_GETFD', 'F_SETFD', 'F_GETFL', 'F_SETFL', 'F_SETLK', 'F_SETLKW', 'F_GETLK', 'F_SETLK64', 'F_SETLKW64', 'F_GETLK64', 'F_DUPFD']
+		assert cmd in ['F_GETFD', 'F_SETFD', 'F_GETFL', 'F_SETFL', 'F_SETLK', 'F_SETLKW', 'F_GETLK', 'F_SETLK64', 'F_SETLKW64', 'F_GETLK64', 'F_DUPFD', 'F_DUPFD_CLOEXEC']
 
 		tracker = None
 		if fdtracker.is_watched(fd):
@@ -746,6 +746,11 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 				new_fd = eval(parsed_line.ret)
 				old_fd = eval(parsed_line.args[0])
 				tracker.set_equivalent(old_fd, new_fd)
+			elif cmd == 'F_DUPFD_CLOEXEC' and eval(parsed_line.ret) != -1:
+				new_fd = eval(parsed_line.ret)
+				old_fd = eval(parsed_line.args[0])
+				tracker.set_equivalent(old_fd, new_fd)
+				tracker.get_attribs(new_fd).add('O_CLOEXEC')
 			elif cmd == 'F_SETFL':
 				assert tracker == fdtracker_unwatched
 	elif parsed_line.syscall in ['mmap', 'mmap2']:

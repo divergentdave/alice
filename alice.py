@@ -60,6 +60,8 @@ print colorize('----------------------------------------------------------------
 cached_rows = None
 cached_dirinode_map = {}
 
+DEVNULL = open("/dev/null", "w")
+
 # use_cached works only on a single thread
 def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_cached = False):
 	def get_stat(path):
@@ -217,15 +219,44 @@ def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_
 						assert (blocks_offset + blocks_count) * BLOCK_SIZE == post_blocks_offset
 
 					if line.special_write == 'GARBAGE':
-						cmd = "dd if=/dev/urandom of=\"" + get_inode_file(line.inode) + "\" conv=notrunc conv=nocreat status=noxfer "
+						input_file = '/dev/urandom'
 					else:
-						cmd = "dd if=/dev/zero of=\"" + get_inode_file(line.inode) + "\" conv=notrunc conv=nocreat status=noxfer "
+						input_file = '/dev/zero'
+					dd_args = [
+						'dd',
+						'if=' + input_file,
+						'of=' + get_inode_file(line.inode),
+						'conv=notrunc',
+						'conv=nocreat',
+						'status=noxfer',
+					]
 					if pre_blocks_count > 0:
-						subprocess.check_call(cmd + 'seek=' + str(pre_blocks_offset) + ' count=' + str(pre_blocks_count) + ' bs=1 2>/dev/null', shell=True, )
+						subprocess.check_call(
+							dd_args + [
+								'seek=' + str(pre_blocks_offset),
+								'count=' + str(pre_blocks_count),
+								'bs=1',
+							],
+							stderr=DEVNULL,
+						)
 					if blocks_count > 0:
-						subprocess.check_call(cmd + 'seek=' + str(blocks_offset) + ' count=' + str(blocks_count) + ' bs=' + str(BLOCK_SIZE) + '  2>/dev/null', shell=True)
+						subprocess.check_call(
+							dd_args + [
+								'seek=' + str(blocks_offset),
+								'count=' + str(blocks_count),
+								'bs=' + str(BLOCK_SIZE),
+							],
+							stderr=DEVNULL,
+						)
 					if post_blocks_count > 0:
-						subprocess.check_call(cmd + 'seek=' + str(post_blocks_offset) + ' count=' + str(post_blocks_count) + ' bs=1 2>/dev/null', shell=True)
+						subprocess.check_call(
+							dd_args + [
+								'seek=' + str(post_blocks_offset),
+								'count=' + str(post_blocks_count),
+								'bs=1',
+							],
+							stderr=DEVNULL,
+						)
 				elif line.special_write == 'GARBAGE' or line.special_write == 'ZEROS':
 					if line.special_write == 'GARBAGE':
 						data = string.ascii_uppercase + string.digits

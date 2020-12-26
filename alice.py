@@ -20,31 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re
 import math
-import pickle
 import os
 import subprocess
-import inspect
 import copy
 import string
-import traceback
 import random
+import shutil
+
 import _aliceautotest as auto_test
-import signal
 import _aliceparsesyscalls
-import pdb
-import cProfile
-import Queue
-import threading
-import time
-import pprint
-import code
-import sys
-import collections
 from alicestruct import Struct
 from _aliceutils import *
-import gc
 
 __author__ = "Thanumalayan Sankaranarayana Pillai"
 __copyright__ = "Copyright 2014, Thanumalayan Sankaranarayana Pillai"
@@ -114,7 +101,7 @@ def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_
 		initial_inodes_list = [inode for (inode, entry_type) in initial_paths_inode_map.values()]
 		assert len(initial_inodes_list) == len(set(initial_inodes_list))
 
-		os.system("mkdir " + replay_dir + '/.inodes')
+		os.mkdir(os.path.join(replay_dir, '.inodes'))
 
 		for path in initial_paths_inode_map.keys():
 			final_path = path.replace(aliceconfig().scratchpad_dir, replay_dir, 1)
@@ -140,12 +127,12 @@ def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_
 			cached_rows = copy.deepcopy(rows)
 			cached_dirinode_map = {}
 			dirinode_map = cached_dirinode_map
-			os.system("rm -rf " + replay_dir)
-			os.system("cp -R " + aliceconfig().initial_snapshot + " " + replay_dir)
+			shutil.rmtree(replay_dir, ignore_errors=True)
+			shutil.copytree(aliceconfig().initial_snapshot, replay_dir)
 			initialize_inode_links(initial_paths_inode_map)
 	else:
-		os.system("rm -rf " + replay_dir)
-		os.system("cp -R " + aliceconfig().initial_snapshot + " " + replay_dir)
+		shutil.rmtree(replay_dir, ignore_errors=True)
+		shutil.copytree(aliceconfig().initial_snapshot, replay_dir)
 		initialize_inode_links(initial_paths_inode_map)
 
 	output_stdout = open(stdout_file, 'w')
@@ -290,12 +277,12 @@ def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_
 			assert line.op == 'sync'
 
 	if use_cached:
-		os.system('rm -rf ' + original_replay_dir)
-		os.system('cp -a ' + replay_dir + ' ' + original_replay_dir)
+		shutil.rmtree(original_replay_dir, ignore_errors=True)
+		subprocess.check_call(['cp', '-a', replay_dir, original_replay_dir])
 		replay_dir = original_replay_dir
 		cached_dirinode_map = copy.deepcopy(dirinode_map)
 
-	os.system("rm -rf " + replay_dir + '/.inodes')
+	shutil.rmtree(os.path.join(replay_dir, '.inodes'))
 
 
 class Replayer:

@@ -25,6 +25,7 @@ import sys
 import os
 import subprocess
 import pickle
+import shutil
 
 __author__ = "Thanumalayan Sankaranarayana Pillai"
 __copyright__ = "Copyright 2014, Thanumalayan Sankaranarayana Pillai"
@@ -44,7 +45,7 @@ args.traces_dir = os.path.abspath(args.traces_dir)
 
 if args.verbose:
 	print 'Taking initial snapshot'
-subprocess.check_output("cp -R " + args.workload_dir + " " + os.path.join(args.traces_dir, "initial_snapshot"), shell = True)
+shutil.copytree(args.workload_dir, os.path.join(args.traces_dir, "initial_snapshot"))
 
 if args.verbose:
 	print 'Running workload with strace'
@@ -53,7 +54,7 @@ subprocess.call(workload_strace_command)
 
 if args.verbose:
 	print 'Recording symbol information'
-subprocess.check_output("alice-strace-retrieve-symbols " + os.path.join(args.traces_dir, "strace.out"), shell = True)
+subprocess.check_output(["alice-strace-retrieve-symbols", os.path.join(args.traces_dir, "strace.out")])
 
 if args.verbose:
 	print 'Recording config information'

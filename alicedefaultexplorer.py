@@ -31,6 +31,7 @@ import code
 import sys
 import collections
 import gc
+import shutil
 
 import tqdm
 
@@ -47,7 +48,7 @@ __license__ = "MIT"
 class MultiThreadedChecker(threading.Thread):
 	queue = Queue.Queue()
 	outputs = {}
-	
+
 	def __init__(self, queue, thread_id='0'):
 		threading.Thread.__init__(self)
 		self.queue = MultiThreadedChecker.queue
@@ -60,7 +61,7 @@ class MultiThreadedChecker(threading.Thread):
 		output_stderr = dirname + '.output_stderr'
 		retcode = subprocess.call(args, stdout = open(output_stdout, 'w'), stderr = open(output_stderr, 'w'))
 		MultiThreadedChecker.outputs[crashid] = retcode
-		os.system('rm -rf ' + dirname)
+		shutil.rmtree(dirname)
 
 	def run(self):
 		while True:

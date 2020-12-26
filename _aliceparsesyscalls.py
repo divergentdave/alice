@@ -27,6 +27,7 @@ import copy
 import os
 import traceback
 import pprint
+import shutil
 from _aliceutils import *
 from alicestruct import Struct
 from collections import namedtuple
@@ -955,9 +956,9 @@ def get_micro_ops():
 					rows.append((pid, parsed_line.time, line, stacktrace))
 
 	rows = sorted(rows, key = lambda row: row[1])
-	
-	os.system("rm -rf " + aliceconfig().scratchpad_dir)
-	os.system("cp -R " + aliceconfig().initial_snapshot + " " + aliceconfig().scratchpad_dir)
+
+	shutil.rmtree(aliceconfig().scratchpad_dir, ignore_errors=True)
+	shutil.copytree(aliceconfig().initial_snapshot, aliceconfig().scratchpad_dir)
 
 	path_inode_map = get_path_inode_map(aliceconfig().scratchpad_dir)
 

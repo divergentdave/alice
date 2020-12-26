@@ -72,7 +72,7 @@ def get_path_inode_map(directory):
 	result = {}
 	while(directory.endswith('/')):
 		directory = directory[ : -1]
-	for inode_path in subprocess.check_output("find " + directory + " -printf '%i %p %y\n'", shell = True).split('\n'):
+	for inode_path in subprocess.check_output(["find", directory, "-printf", "%i %p %y\n"]).split('\n'):
 		if inode_path == '':
 			continue
 		(inode, path, entry_type) = inode_path.split(' ')

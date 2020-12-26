@@ -31,6 +31,9 @@ import code
 import sys
 import collections
 import gc
+
+import tqdm
+
 from alice import aliceconfig
 from alice import Replayer
 from alicedefaultfs import defaultfs
@@ -124,8 +127,8 @@ def default_checks(alice_args, threads = 1):
 	atomic_patch_middle = set()
 
 	print 'Finding vulnerabilities...'
-	# Finding across-syscall atomicity
-	for i in range(0, replayer.mops_len()):
+	print '\tFinding across-syscall atomicity vulnerabilities'
+	for i in tqdm.tqdm(range(0, replayer.mops_len())):
 		dirname = os.path.join(aliceconfig().scratchpad_dir, 'reconstructeddir-' + str(i))
 		replayer.dops_end_at((i, replayer.dops_len(i) - 1))
 		replayer.construct_crashed_dir(dirname, dirname + '.input_stdout')
@@ -156,11 +159,11 @@ def default_checks(alice_args, threads = 1):
 		print '(Static vulnerability) Across-syscall atomicity: ' + \
 			'Operation ' + vul[0] + ' until ' + vul[1]
 
-	# Finding ordering vulnerabilities
+	print '\tFinding ordering vulnerabilities'
 	replayer.load(0)
 	MultiThreadedChecker.reset()
 
-	for i in range(0, replayer.mops_len()):
+	for i in tqdm.tqdm(range(0, replayer.mops_len())):
 		if replayer.dops_len(i) == 0 or i in atomic_patch_middle or (i - 1) in atomic_patch_middle:
 			continue
 
@@ -194,14 +197,14 @@ def default_checks(alice_args, threads = 1):
 		print '(Static vulnerability) Ordering: ' + \
 			'Operation ' + vul[0] + ' needed before ' + vul[1]
 
-	# Finding atomicity vulnerabilities
 	replayer.load(0)
 	MultiThreadedChecker.reset()
 	atomicity_explanations = dict()
 
 	for mode in (('count', 1), ('count', 3), ('aligned', 4096)):
+		print '\tFinding atomicity vulnerabilities {}'.format(mode)
 		replayer.set_fs(defaultfs(*mode))
-		for i in range(0, replayer.mops_len()):
+		for i in tqdm.tqdm(range(0, replayer.mops_len())):
 			if i in atomic_patch_middle or (i - 1) in atomic_patch_middle:
 				continue
 
@@ -238,7 +241,6 @@ def default_checks(alice_args, threads = 1):
 					for k in range(0, j):
 						if (mode, i, j, k) in checker_outputs and checker_outputs[(mode, i, j, k)] != 0:
 							dynamicvuls.add('???')
-					
 
 		if len(dynamicvuls) > 0:
 			print '(Dynamic vulnerability) Atomicity: ' + \

@@ -637,20 +637,26 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 		if int(parsed_line.ret) != -1:
 			fd = safe_string_to_int(parsed_line.args[0])
 			if fdtracker.is_watched(fd):
-				mode = parsed_line.args[1]
-				assert mode == '0'
+				mode = safe_string_to_int(parsed_line.args[1])
+				assert mode in (0, 3)
 				offset = safe_string_to_int(parsed_line.args[2])
 				count = safe_string_to_int(parsed_line.args[3])
 				name = fdtracker.get_name(fd)
 				inode = fdtracker.get_inode(fd)
 				init_size = __replayed_stat(name).st_size
-				if offset + count > init_size:
-					new_op = Struct(op = 'trunc', name = name, final_size = offset + count, inode = inode, initial_size = init_size)
+				if mode == 0:
+					if offset + count > init_size:
+						new_op = Struct(op = 'trunc', name = name, final_size = offset + count, inode = inode, initial_size = init_size)
+						micro_operations.append(new_op)
+						__replayed_truncate(name, offset + count)
+					new_op = Struct(op = 'write', name = name, inode = inode, offset = offset, count = count, dump_file = '/dev/zero', dump_offset = 0)
+					assert new_op.count > 0
 					micro_operations.append(new_op)
-					__replayed_truncate(name, offset + count)
-				new_op = Struct(op = 'write', name = name, inode = inode, offset = offset, count = count, dump_file = '/dev/zero', dump_offset = 0)
-				assert new_op.count > 0
-				micro_operations.append(new_op)
+				elif mode == 3:  # FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE
+					assert offset + count <= init_size
+					new_op = Struct(op = 'write', name = name, inode = inode, offset = offset, count = count, dump_file = '/dev/zero', dump_offset = 0)
+					assert new_op.count > 0
+					micro_operations.append(new_op)
 	elif parsed_line.syscall in ['fsync', 'fdatasync']:
 		assert int(parsed_line.ret) == 0
 		fd = safe_string_to_int(parsed_line.args[0])

@@ -648,8 +648,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 					new_op = Struct(op = 'trunc', name = name, final_size = offset + count, inode = inode, initial_size = init_size)
 					micro_operations.append(new_op)
 					__replayed_truncate(name, offset + count)
-				data = '\x00' * count
-				new_op = Struct(op = 'write', name = name, inode = inode, offset = offset, count = count, dump_file = '', dump_offset = 0, override_data = data)
+				new_op = Struct(op = 'write', name = name, inode = inode, offset = offset, count = count, dump_file = '/dev/zero', dump_offset = 0)
 				assert new_op.count > 0
 				micro_operations.append(new_op)
 	elif parsed_line.syscall in ['fsync', 'fdatasync']:

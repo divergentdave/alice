@@ -127,6 +127,8 @@ def parse_line(line):
 		for innocent_line in ['+++ exited with', ' --- SIG', '<unfinished ...>', ' = ? <unavailable>', 'ptrace(SYSCALL):No such process']:
 			if line.find(innocent_line) != -1:
 				return False
+		if '(' in line and ')' not in line:
+			return False
 		print line
 		raise err
 

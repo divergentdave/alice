@@ -246,10 +246,9 @@ def replay_disk_ops(initial_paths_inode_map, rows, replay_dir, stdout_file, use_
 						)
 				elif line.special_write == 'GARBAGE' or line.special_write == 'ZEROS':
 					if line.special_write == 'GARBAGE':
-						data = string.ascii_uppercase + string.digits
+						buf = os.urandom(line.count)
 					else:
-						data = '\0'
-					buf = ''.join(random.choice(data) for x in range(line.count))
+						buf = '\0' * line.count
 					fd = os.open(get_inode_file(line.inode), os.O_WRONLY)
 					os.lseek(fd, line.offset, os.SEEK_SET)
 					os.write(fd, buf)

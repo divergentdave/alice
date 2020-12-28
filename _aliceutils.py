@@ -22,6 +22,7 @@ import os
 import argparse
 import subprocess
 import re
+import stat
 
 __author__ = "Thanumalayan Sankaranarayana Pillai"
 __copyright__ = "Copyright 2014, Thanumalayan Sankaranarayana Pillai"
@@ -68,17 +69,22 @@ def init_aliceconfig(args):
 def aliceconfig():
 	return __aliceconfig
 
+
 def get_path_inode_map(directory):
 	result = {}
-	while(directory.endswith('/')):
-		directory = directory[ : -1]
-	for inode_path in subprocess.check_output(["find", directory, "-printf", "%i %p %y\n"]).split('\n'):
-		if inode_path == '':
-			continue
-		(inode, path, entry_type) = inode_path.split(' ')
-		inode = int(inode)
-		assert entry_type == 'd' or entry_type == 'f'
-		result[path] = (inode, entry_type)
+	directory = directory.rstrip("/")
+	top_stat = os.lstat(directory)
+	result[directory] = (top_stat.st_ino, 'd')
+	for dirpath, dirnames, filenames in os.walk(directory):
+		for dirname in dirnames:
+			path = os.path.join(dirpath, dirname)
+			dir_stat = os.lstat(path)
+			result[path] = (dir_stat.st_ino, 'd')
+		for filename in filenames:
+			path = os.path.join(dirpath, filename)
+			file_stat = os.lstat(path)
+			assert stat.S_ISREG(file_stat)
+			result[path] = (file_stat.st_ino, 'f')
 	return result
 
 

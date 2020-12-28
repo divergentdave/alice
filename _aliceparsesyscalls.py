@@ -124,7 +124,7 @@ def parse_line(line):
 
 		return toret
 	except AttributeError as err:
-		for innocent_line in ['+++ exited with', ' --- SIG', '<unfinished ...>', ' = ? <unavailable>', 'ptrace(SYSCALL):No such process']:
+		for innocent_line in ['+++ exited with', ' --- SIG', '<unfinished ...>', ' = ? <unavailable>', 'ptrace(SYSCALL):No such process', '+++ killed by ']:
 			if line.find(innocent_line) != -1:
 				return False
 		if '(' in line and ')' not in line:

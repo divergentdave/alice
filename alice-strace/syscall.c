@@ -1962,9 +1962,15 @@ print_libunwind_backtrace(struct tcb* tcp)
 	int n = 0, ret;
 	unw_cursor_t c;
 
-	EXITIF(unw_init_remote(&c, libunwind_as, tcp->libunwind_ui) < 0);
+	if (unw_init_remote(&c, libunwind_as, tcp->libunwind_ui) < 0) {
+		fprintf(stderr, "libunwind error: unw_init_remote failed\n");
+		return;
+	}
 	do {
-		EXITIF(unw_get_reg(&c, UNW_REG_IP, &ip) < 0);
+		if (unw_get_reg(&c, UNW_REG_IP, &ip) < 0) {
+			fprintf(stderr, "libunwind error: unw_get_reg failed\n");
+			return;
+		}
 
 		print_normalized_addr(tcp, ip);
 

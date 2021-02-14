@@ -244,7 +244,7 @@ class defaultfs:
 					elif ops[j].op == 'truncate':
 						if not ops[j].inode == ops[i].inode:
 							continue
-						assert ops[i].hidden_micro_op.hidden_parsed_line.syscall in ['fsync', 'fdatasync', 'sync']
+						assert ops[i].hidden_micro_op.hidden_parsed_line.syscall in ['fsync', 'fdatasync', 'sync', 'sync_file_range']
 						ops[i].hidden_dependencies.add(j)
 						ops[j].hidden_twojournalfs_stuff.reverse_fsync_dependencies.add(i)
 					elif ops[j].op == 'write':

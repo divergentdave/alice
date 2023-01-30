@@ -589,7 +589,10 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 					assert memtracker.file_mapped(dest_inode) == False
 					os.rename(replayed_path(dest), replayed_path(dest) + '.deleted_' + str(uuid.uuid1()))
 				os.rename(replayed_path(source), replayed_path(dest))
-	elif parsed_line.syscall == 'unlink':
+	elif parsed_line.syscall == 'unlink' or \
+			(parsed_line.syscall == 'unlinkat' and parsed_line.args[0] == 'AT_FDCWD' and parsed_line.args[2] == '0'):
+		if parsed_line.syscall == 'unlinkat':
+			parsed_line.args = parsed_line.args[1:2]
 		if int(parsed_line.ret) != -1:
 			name = proctracker.original_path(eval(parsed_line.args[0]))
 			if is_interesting(name):

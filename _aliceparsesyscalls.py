@@ -696,7 +696,10 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 			offset = safe_string_to_int(parsed_line.args[1])
 			count = safe_string_to_int(parsed_line.args[2])
 			micro_operations.append(Struct(op = parsed_line.syscall, name = name, offset = offset, count = count, inode = inode))
-	elif parsed_line.syscall == 'mkdir':
+	elif parsed_line.syscall == 'mkdir' or \
+			(parsed_line.syscall == 'mkdirat' and parsed_line.args[0] == 'AT_FDCWD'):
+		if parsed_line.syscall == 'mkdirat':
+			parsed_line.args.pop(0)
 		if int(parsed_line.ret) != -1:
 			name = proctracker.original_path(eval(parsed_line.args[0]))
 			mode = parsed_line.args[1]

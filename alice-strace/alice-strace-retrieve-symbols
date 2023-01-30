@@ -147,9 +147,7 @@ def get_symbol_table_using_gdb(filenames_to_addrs):
 		# <hex address>
 		# one or more lines containing the output of gdb (which should be appended together later)
 		tokens = gdb_stdout.split('===')
-		for t in tokens:
-			if not t:
-				continue
+		for t in tokens[1:]:
 			# collapse all space-like characters into a single space to simplify parsing later
 			t = re.sub('\s+', ' ', t).strip()
 			hex_addr = t.split()[0].strip()

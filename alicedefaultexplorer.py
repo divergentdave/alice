@@ -98,7 +98,7 @@ def stack_repr(op):
 				continue
 			if '/libc' in stack_frame.binary_filename:
 				continue
-			if stack_frame.func_name != None and 'output_stacktrace' in stack_frame.func_name:
+			if stack_frame.func_name != None and ('output_stacktrace' in stack_frame.func_name or 'syscall.Syscall' in stack_frame.func_name):
 				continue
 			found = True
 			break

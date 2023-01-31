@@ -49,10 +49,12 @@ class MultiThreadedChecker(threading.Thread):
 	queue = Queue.Queue()
 	outputs = {}
 
-	def __init__(self, queue, thread_id='0'):
+	def __init__(self, thread_id, checker_log_directory):
 		threading.Thread.__init__(self)
 		self.queue = MultiThreadedChecker.queue
 		self.thread_id = str(thread_id)
+		self.checker_log_directory = checker_log_directory
+		self.counter = 0
 
 	def __threaded_check(self, dirname, crashid):
 		assert type(aliceconfig().checker_tool) in [list, str, tuple]
@@ -61,6 +63,12 @@ class MultiThreadedChecker(threading.Thread):
 		output_stderr = dirname + '.output_stderr'
 		retcode = subprocess.call(args, stdout = open(output_stdout, 'w'), stderr = open(output_stderr, 'w'))
 		MultiThreadedChecker.outputs[crashid] = retcode
+
+		if retcode != 0 and self.checker_log_directory:
+			shutil.copy(output_stdout, os.path.join(self.checker_log_directory, "failure_{}_{}_stdout.log".format(self.thread_id, self.counter)))
+			shutil.copy(output_stderr, os.path.join(self.checker_log_directory, "failure_{}_{}_stderr.log".format(self.thread_id, self.counter)))
+			self.counter += 1
+
 		shutil.rmtree(dirname)
 
 	def run(self):
@@ -120,8 +128,13 @@ def default_checks(alice_args, threads = 1):
 	replayer.print_ops()
 
 	assert threads > 0
+	if alice_args['log_dir']:
+		try:
+			os.mkdir(alice_args['log_dir'])
+		except OSError:
+			pass
 	for i in range(0, threads):
-		t = MultiThreadedChecker(MultiThreadedChecker.queue, i)
+		t = MultiThreadedChecker(i, alice_args['log_dir'])
 		t.setDaemon(True)
 		t.start()
 

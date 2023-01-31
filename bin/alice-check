@@ -42,6 +42,7 @@ parser.add_argument('--traces_dir', required = True, help = 'Location of the tra
 parser.add_argument('--threads', type = int, default = 4)
 parser.add_argument('--debug_level', type = int, default = 0, choices = range(0, 3))
 parser.add_argument('--ignore_mmap', type = bool, default = False)
+parser.add_argument('--log_dir', help = 'Output directory for checker logs')
 
 args = parser.parse_args()
 args.checker = os.path.abspath(args.checker)
@@ -67,6 +68,7 @@ alice_config['starting_cwd'] = config['starting_wd']
 alice_config['checker_tool'] = args.checker
 alice_config['debug_level'] = args.debug_level
 alice_config['ignore_mmap'] = args.ignore_mmap
+alice_config['log_dir'] = args.log_dir
 
 folders = ['/run/shm/', '/dev/shm/', '/tmp', None]
 for folder in folders:

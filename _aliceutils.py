@@ -83,7 +83,7 @@ def get_path_inode_map(directory):
 		for filename in filenames:
 			path = os.path.join(dirpath, filename)
 			file_stat = os.lstat(path)
-			assert stat.S_ISREG(file_stat)
+			assert stat.S_ISREG(file_stat.st_mode)
 			result[path] = (file_stat.st_ino, 'f')
 	return result
 

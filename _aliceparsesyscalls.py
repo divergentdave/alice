@@ -738,6 +738,12 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 				assert 'CLONE_FILES' not in flags
 				assert 'CLONE_FS' not in flags
 				proctracker.record_fork(new_tid)
+	elif parsed_line.syscall == 'syscall_435':  # clone3
+		if parsed_line.ret == "-1" and \
+				parsed_line.return_explanation == "(errno 38)":
+			pass
+		else:
+			raise Exception("clone3 is unsupported by this version of strace")
 	elif parsed_line.syscall == 'vfork':
 		new_pid = int(parsed_line.ret)
 		if new_pid != -1:

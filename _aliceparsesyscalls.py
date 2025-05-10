@@ -237,6 +237,10 @@ class FileDescriptorTracker:
 		assert fd in self.fd_details
 		return self.fd_details[fd].attribs
 
+	def set_attribs(self, fd, attribs):
+		assert fd in self.fd_details
+		self.fd_details[fd].attribs = attribs
+
 	def set_pos(self, fd, pos):
 		assert fd in self.fd_details
 		self.fd_details[fd].pos = pos
@@ -455,20 +459,14 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 						micro_operations.append(new_op)
 						__replayed_truncate(name, 0)
 
-				fd_flags = []
-				if 'O_SYNC' in flags or 'O_DSYNC' in flags or 'O_RSYNC' in flags:
-					fd_flags.append('O_SYNC')
-				if 'O_CLOEXEC' in flags:
-					fd_flags.append('O_CLOEXEC')
+				fd_flags = simplify_flags(flags)
 
 				if 'O_APPEND' in flags:
 					fdtracker.new_fd_mapping(fd, name, __replayed_stat(name).st_size, fd_flags, inode)
 				else:
 					fdtracker.new_fd_mapping(fd, name, 0, fd_flags, inode)
 		elif fd >= 0:
-			fd_flags = []
-			if 'O_CLOEXEC' in flags:
-				fd_flags.append('O_CLOEXEC')
+			fd_flags = simplify_flags(flags)
 			fdtracker_unwatched.new_fd_mapping(fd, name, 0, fd_flags, 0)
 	elif parsed_line.syscall in ['write', 'writev', 'pwrite', 'pwritev']:	
 		fd = safe_string_to_int(parsed_line.args[0])
@@ -772,7 +770,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 				tracker.set_equivalent(old_fd, new_fd)
 				tracker.get_attribs(new_fd).add('O_CLOEXEC')
 			elif cmd == 'F_SETFL':
-				assert tracker == fdtracker_unwatched
+				tracker.set_attribs(fd, simplify_flags(parsed_line.args[2]))
 	elif parsed_line.syscall in ['mmap', 'mmap2']:
 		addr_start = safe_string_to_int(parsed_line.ret)
 		length = safe_string_to_int(parsed_line.args[1])
@@ -1004,3 +1002,12 @@ def get_micro_ops():
 			exit()
 
 	return (path_inode_map, micro_operations)
+
+
+def simplify_flags(flags):
+	fd_flags = []
+	if 'O_SYNC' in flags or 'O_DSYNC' in flags or 'O_RSYNC' in flags:
+		fd_flags.append('O_SYNC')
+	if 'O_CLOEXEC' in flags:
+		fd_flags.append('O_CLOEXEC')
+	return fd_flags

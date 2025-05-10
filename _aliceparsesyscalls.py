@@ -77,7 +77,7 @@ innocent_syscalls = ["_exit","pread","_newselect","_sysctl","accept","accept4","
 "timerfd_gettime","timerfd_settime","times","tkill","tuxcall","ugetrlimit","ulimit",
 "uname","unshare","uselib","ustat","utime","utimensat","utimes",
 "vhangup","vm86old","vserver","wait4","waitid","waitpid", "mount", "fstatat", "newfstatat",
-"prlimit64","syscall_332","syscall_318"]
+"prlimit64","syscall_332","syscall_318","syscall_334"]
 
 innocent_syscalls += ['mtrace_mmap', 'mtrace_munmap', 'mtrace_thread_start']
 

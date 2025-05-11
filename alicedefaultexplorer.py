@@ -128,6 +128,7 @@ def default_checks(alice_args, threads = 1):
 	assert threads > 0
 	if alice_args['log_dir']:
 		try:
+			shutil.rmtree(alice_args['log_dir'], ignore_errors=True)
 			os.mkdir(alice_args['log_dir'])
 		except OSError:
 			pass

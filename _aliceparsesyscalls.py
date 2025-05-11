@@ -433,7 +433,7 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 			if 'O_WRONLY' in flags or 'O_RDWR' in flags:
 				assert 'O_ASYNC' not in flags
 				assert 'O_DIRECTORY' not in flags
-			if fd >= 0 and 'O_DIRECTORY' not in flags:
+			if fd >= 0:
 				# Finished with most of the asserts and initialization. Actually handling the open() here.
 
 				newly_created = False

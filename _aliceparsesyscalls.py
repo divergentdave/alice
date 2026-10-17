@@ -417,6 +417,9 @@ def __get_micro_op(syscall_tid, line, stackinfo, mtrace_recorded):
 	if parsed_line == False:
 		return []
 
+	if parsed_line.syscall in equivalent_syscall:
+		parsed_line.syscall = equivalent_syscall[parsed_line.syscall]
+
 	### Known Issues:
 	###	1. Access time with read() kind of calls, modification times in general, other attributes
 	###	2. Symlinks

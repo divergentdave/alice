@@ -1,0 +1,9 @@
+.git
+.cache
+.vscode
+*.pyc
+*.o
+example/**/workload_*
+example/**/traces_*
+example/**/graph_*
+example/**/data_*

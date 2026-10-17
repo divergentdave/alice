@@ -1986,6 +1986,7 @@ print_libunwind_backtrace(struct tcb* tcp)
 
 #endif
 
+#if defined (I386) || defined (X86_64)
 static void
 print_i386_ebp_backtrace(struct tcb* tcp)
 {
@@ -2026,6 +2027,7 @@ print_i386_ebp_backtrace(struct tcb* tcp)
 		ret = umoven(tcp, (long)cur_ebp, current_wordsize, (void*)&cur_ebp);
 	}
 }
+#endif
 
 static void
 output_stacktrace(int really_output_stacktrace, struct tcb* tcp)
@@ -2045,38 +2047,10 @@ output_stacktrace(int really_output_stacktrace, struct tcb* tcp)
 		alloc_mmap_cache(tcp);
 	}
 
-	/*
-	#if defined (I386)
-		printf("defined I386\n");
-	#elif  defined (X86_64)
-		printf("defined X86_64\n");
-	#endif
-
-	# ifdef LIBUNWIND
-		printf("defined LIBUNWIND\n");
-	#else
-		printf("undefined LIBUNWIND\n");
-	#endif
-
-	if (use_libunwind) {
-		printf("use_libunwind\n");
-	} else {
-		printf("no use_libunwind\n");
-	}
-
-	if (IS_32BIT_EMU) {
-		printf("32BIT_EMU\n");
-	} else {
-		printf("not 32BIT_EMU\n");
-	}
-	*/
-
 #if defined (I386)
 
 # ifdef LIBUNWIND
 	if (use_libunwind) {
-		// use libunwind to unwind the stack, which works even for code compiled
-		// without a frame pointer, but is relatively SLOW
 		print_libunwind_backtrace(tcp);
 	} else {
 # endif
@@ -2088,20 +2062,23 @@ output_stacktrace(int really_output_stacktrace, struct tcb* tcp)
 #elif defined (X86_64)
 
 # ifdef LIBUNWIND
-	// a 64-bit version of libunwind can't parse 32-bit binaries, so we MUST
-	// resort to using stack crawling when tracking a 32-bit binary:
 	if (IS_32BIT_EMU || !use_libunwind) {
 # endif
 		print_i386_ebp_backtrace(tcp);
 # ifdef LIBUNWIND
 	} else if (use_libunwind) {
-		// use libunwind
 		print_libunwind_backtrace(tcp);
 	}
 # endif
 
+#elif defined (AARCH64)
+
+# ifdef LIBUNWIND
+	print_libunwind_backtrace(tcp);
+# endif
+
 #else
-# error "Unknown architecture (not I386 or X86_64)"
+# error "Unknown architecture (not I386, X86_64 or AARCH64)"
 #endif
 
 	tprintstackinfo("]\n"); // closing brace for stack trace

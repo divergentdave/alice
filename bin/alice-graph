@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+import os
+import sys
+
+alice_home = os.getenv("ALICE_HOME", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(alice_home)
+
+import alicegraph
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="ALICE Dependency Graph Visualizer")
+    parser.add_argument("--traces_dir", required=True, help="Directory containing strace files")
+    parser.add_argument("--checker", required=True, help="Path to checker script")
+    parser.add_argument("--output", default="alice_graph", help="Output file prefix")
+    parser.add_argument("--threads", type=int, default=4, help="Number of checker threads")
+    args = parser.parse_args()
+
+    alicegraph.generate_graph(args.traces_dir, args.checker, args.output, args.threads)
